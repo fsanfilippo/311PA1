@@ -31,13 +31,16 @@ public class WikiCrawler {
      * You can assume that the document is HTML from some wiki page. The method must
       */
      public ArrayList<String> extractLinks(String document){
+         print("Extracting Links");
          if(document == null) return null;
          //remove everything before first <p>
-         int iterator = document.indexOf("<p>");
-         String trimmed = document.substring(iterator);
+         int trimmedIndex = document.indexOf("<p>");
+         String trimmed = document.substring(trimmedIndex);
          String link;
          ArrayList<String> links = new ArrayList<>();
-         int start = trimmed.indexOf("/wiki/", iterator);
+
+         int start = trimmed.indexOf("/wiki/");
+         int iterator;
          while(start != -1){
 
              iterator = trimmed.indexOf("\"", start);

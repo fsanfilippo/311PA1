@@ -5,10 +5,11 @@ import java.util.List;
 public class PriorityTest {
 
     public static void main(String[] args){
-        PriorityQ p = new PriorityQ();
-        for(int i = 0; i < 20; i++){
-            p.add("asdf", (int) (Math.random() * 100));
-        }
+
+//        PriorityQ p = new PriorityQ();
+//        for(int i = 0; i < 20; i++){
+//            p.add("asdf", (int) (Math.random() * 100));
+//        }
 
 
 //        System.out.println("Max Element: " + p.returnMax());
