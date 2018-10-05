@@ -7,10 +7,12 @@ public class PriorityQ {
 
     private List<Pair<String, Integer>> q;
     private List<Integer> pArray;
+
     public PriorityQ(){
         q = new ArrayList<>();
         pArray = new ArrayList<>();
     }
+
     public String toString(){
         String result = "Contents: \n";
         int i = 0;
@@ -45,6 +47,10 @@ public class PriorityQ {
         return p.getValue();
     }
     public Pair<String, Integer> remove(int i){
+        if(outBounds(i) || isEmpty()){
+            return null;
+        }
+
         Collections.swap(q, i, q.size() - 1);
         Pair<String, Integer> p = q.remove(q.size() - 1);
         percolateDown(i);
@@ -52,21 +58,33 @@ public class PriorityQ {
     }
 
     public boolean decrementPriority(int i, int k){
+        if(outBounds(i)){
+            return false;
+        }
+
         Pair<String, Integer> p = q.get(i);
         p.setPriority(p.getPriority() - k);
         q.set(i, p);
         percolateDown(i);
         return true;
     }
+
+    //Not implemented Yet
     public List<Integer> priorityArray(){
         return pArray;
     }
 
     public int getKey(int i){
+        if(outBounds(i)){
+            return -1;
+        }
         return q.get(i).getPriority();
     }
 
     public String getValue(int i){
+        if(outBounds(i)){
+            return "Your'e Out of Bounds pal";
+        }
         return q.get(i).getValue();
     }
 
@@ -75,6 +93,10 @@ public class PriorityQ {
     }
 
     private boolean percolateUp(){
+        if(q.isEmpty()){
+            return true;
+        }
+
         int childIndex = q.size() - 1;
 
         int parentIndex = (int) Math.ceil(((double) childIndex/2)) - 1;
@@ -96,6 +118,9 @@ public class PriorityQ {
     }
 
     private boolean percolateDown(int i){
+        if(outBounds(i)){
+            return false;
+        }
 
         Pair<String, Integer> p = q.get(i);
         Pair<String, Integer> LChild;
@@ -106,7 +131,7 @@ public class PriorityQ {
             LChild = q.get(LChildIndex);
             RChild = (RChildIndex > q.size() - 1)?null:q.get(RChildIndex);
             //Smaller than one of them?
-            if(p.getPriority() < LChild.getPriority() || p.getPriority() < RChild.getPriority()){
+            if(p.getPriority() < LChild.getPriority() || ((RChild != null) && p.getPriority() < RChild.getPriority())){
                 //Is it the left one?
                 if (RChild == null || LChild.getPriority() > RChild.getPriority()){
                     Collections.swap(q, i, LChildIndex);
@@ -125,4 +150,9 @@ public class PriorityQ {
         }
         return true;
     }
+
+    public boolean outBounds(int i){
+        return i < 0 || i >= q.size();
+    }
+
 }
