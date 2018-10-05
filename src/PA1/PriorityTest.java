@@ -24,8 +24,8 @@ public class PriorityTest {
 //        p.remove(3);
 //        System.out.println(p.toString());
 
-        String[] topics = {"Madagascar", "Africa", "DreamWorks"};
-        WikiCrawler wc = new WikiCrawler("/wiki/Bernie_Mac", 30, topics, "asdf" );
+        String[] topics = {"TV", "Film", "television"};
+        WikiCrawler wc = new WikiCrawler("/wiki/Television_Critics_Association", 45, topics, "asdf" );
         wc.crawl(true);
 
     }

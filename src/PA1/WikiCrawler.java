@@ -51,9 +51,7 @@ public class WikiCrawler {
 
              start = trimmed.indexOf("/wiki/", iterator);
          }
-//         for(String s: links){
-//             print(s);
-//         }
+
          print("number of links: " + links.size());
          return links;
 
@@ -69,16 +67,24 @@ public class WikiCrawler {
      */
     public void crawl(boolean focused){
 
-        int numPagesOpened = 0;
         HashSet<String> discovered = new HashSet<>();
+        int numPagesOpened = 0;
+
+        crawlHelper(focused, discovered, seed, numPagesOpened);
+
+    }
+
+    public void crawlHelper(boolean focused, HashSet<String> discovered, String url, int numPagesOpened){
+
+
         PriorityQ pq = new PriorityQ();
 
         //open seed page
         String seedDoc;
         try {
-            seedDoc = getWebPage(seed);
+            seedDoc = getWebPage(url);
         } catch (IOException e) {
-            print("Unable to access seed page: " + seed);
+            print("Unable to access seed page: " + url);
             print("Please specify new seed");
             seedDoc = null;
             e.printStackTrace();
@@ -94,6 +100,7 @@ public class WikiCrawler {
         for(String link: links){
             if(!discovered.contains(link)) {
                 if(numPagesOpened++ % 20 == 0){
+                    print("Being Polite. Sleeping for 3 seconds");
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
@@ -112,19 +119,15 @@ public class WikiCrawler {
                 discovered.add(link);
             }
             if(numPagesOpened >= max) {
-                break;
+                return;
             }
         }
 
+        crawlHelper(focused, discovered, pq.extractMax(), numPagesOpened);
 
-        print(pq.toString());
-        print(pq.extractMax());
         return;
-        //pop first for pQ or FIFO
-        //add it to discovered HashMap
-
-
     }
+
 
     //Gets web page given it's URL
     public String getWebPage(String url) throws java.io.IOException{
@@ -185,6 +188,7 @@ public class WikiCrawler {
         System.out.println(str);
         return true;
     }
+
 
 
 }
