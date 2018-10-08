@@ -1,28 +1,36 @@
 package PA1;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.net.*;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.List;
 
 public class WikiCrawler {
 
 
-    public static final String BASE_URL = "https://en.wikipedia.org";
+    public static final String BASE_URL = "en.wikipedia.org";
     private String seed;
     private int max;
     private String[] topics;
     private String output;
 
 
-    public WikiCrawler(String seed, int max, String[] topics, String output){
+    public WikiCrawler(String seed, int max, String[] topics, String output) throws IOException {
         this.seed = seed;
         this.max = max;
         this.topics = topics;
         this.output = output;
+
+        File f = new File(output);
+        try {
+            f.createNewFile();
+            PrintWriter writer = new PrintWriter(f);
+            writer.print("");
+            writer.close();
+        } catch (IOException e) {
+            print("Output file is not valid");
+            throw e;
+        }
     }
 
 
@@ -31,7 +39,7 @@ public class WikiCrawler {
      * You can assume that the document is HTML from some wiki page. The method must
       */
      public ArrayList<String> extractLinks(String document){
-         print("Extracting Links");
+         print("\nExtracting Links");
          if(document == null) return null;
          //remove everything before first <p>
          int trimmedIndex = document.indexOf("<p>");
@@ -46,7 +54,16 @@ public class WikiCrawler {
              iterator = trimmed.indexOf("\"", start);
 
              link = trimmed.substring(start, iterator);
-             if(!link.contains("#") && !link.contains(":"))
+             String decoded;
+             try {
+                 decoded = URLDecoder.decode(link, "UTF-8");
+             } catch (UnsupportedEncodingException e) {
+                 e.printStackTrace();
+                 decoded = "";
+             }
+             if(decoded.equals("/wiki/Main_Page"))
+                 return links;
+             if(!decoded.contains("#") && !decoded.contains(":"))
                  links.add(link);
 
              start = trimmed.indexOf("/wiki/", iterator);
@@ -80,15 +97,7 @@ public class WikiCrawler {
         PriorityQ pq = new PriorityQ();
 
         //open seed page
-        String seedDoc;
-        try {
-            seedDoc = getWebPage(url);
-        } catch (IOException e) {
-            print("Unable to access seed page: " + url);
-            print("Please specify new seed");
-            seedDoc = null;
-            e.printStackTrace();
-        }
+        String seedDoc = getWebPage(url);
 
         //increment numPagesOpened by 1
         numPagesOpened++;
@@ -100,13 +109,16 @@ public class WikiCrawler {
         for(String link: links){
             if(!discovered.contains(link)) {
                 if(numPagesOpened++ % 20 == 0){
-                    print("Being Polite. Sleeping for 3 seconds");
+                    print("Being Polite, sleeping for 3 seconds");
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+
+                //Write Edge
+                writeEdgeToOutput(url, link);
                 //case: focused true -> for each page, determine relevance
                 if(focused){
                     int prty = getRelevance(link);
@@ -130,17 +142,29 @@ public class WikiCrawler {
 
 
     //Gets web page given it's URL
-    public String getWebPage(String url) throws java.io.IOException{
+    public String getWebPage(String url){
 
-        print("retrieving: " + url);
-        URL urlObj = new URL(BASE_URL+url);
-        InputStream is = urlObj.openStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        String line;
+        System.out.print("retrieving: " + url);
         String result = "";
-        while ((line = br.readLine()) != null) {
-            result += line + "\n";
+
+        try {
+            URI uri = new URI(
+                    "https",
+                    BASE_URL,
+                    url,
+                    null);
+            URL urlObj = new URL(uri.toString());
+            InputStream is = null;
+            is = urlObj.openStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = br.readLine()) != null) {
+                result += line + "\n";
+            }
+        } catch (IOException | URISyntaxException e) {
+            print("\nCan't Retrieve URL. Probably wrong subdomain");
         }
+
 
         return result;
 
@@ -148,17 +172,17 @@ public class WikiCrawler {
 
     private int getRelevance(String url){
         String page;
-        try {
-            page = getWebPage(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return -1;
-        }
+
+        page = getWebPage(url);
+        int trimmedIndex = page.indexOf("<p>");
+        String trimmed = page.substring(trimmedIndex);
 
         int total = 0;
         for(String topic: topics){
-            total += numberOfOccurences(page, topic);
+            total += numberOfOccurences(trimmed, topic);
         }
+
+        System.out.print(" | relevance: " + total + "\n");
         return total;
 
     }
@@ -181,7 +205,18 @@ public class WikiCrawler {
         return count;
     }
 
+    private void writeEdgeToOutput(String node1, String node2){
 
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(output, true));
+            writer.append('\n');
+            writer.append(node1 + " -> " + node2);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 
     public boolean print (String str){

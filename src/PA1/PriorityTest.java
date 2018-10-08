@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 public class PriorityTest {
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
 
 //        PriorityQ p = new PriorityQ();
 //        for(int i = 0; i < 20; i++){
@@ -25,8 +25,8 @@ public class PriorityTest {
 //        System.out.println(p.toString());
 
         String[] topics = {"TV", "Film", "television"};
-        WikiCrawler wc = new WikiCrawler("/wiki/Television_Critics_Association", 45, topics, "asdf" );
-        wc.crawl(true);
+        WikiCrawler wc = new WikiCrawler("/wiki/Complexity_theory", 100, topics, "output.txt" );
+        wc.crawl(false);
 
     }
 
